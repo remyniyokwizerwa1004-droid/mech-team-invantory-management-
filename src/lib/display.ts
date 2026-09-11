@@ -99,7 +99,7 @@ export const INVENTORY_ACTION_LABELS: Record<InventoryAction, string> = {
 };
 
 export const TICKET_EVENT_LABELS: Record<TicketEventType, string> = {
-  OPENED: "Ticket opened",
+  OPENED: "Job opened",
   STATUS_CHANGED: "Status changed",
   ASSIGNED: "Assignment changed",
   COMMENT: "Note added",

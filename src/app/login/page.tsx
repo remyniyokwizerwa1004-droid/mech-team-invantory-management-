@@ -40,7 +40,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
           </span>
           <h1 className="text-lg font-semibold text-ink">Sign in</h1>
           <p className="mt-1 text-sm text-muted">
-            Only needed to change stock, raise a request or open a ticket.
+            Only needed to change stock, raise a request or report a fault.
           </p>
         </div>
 

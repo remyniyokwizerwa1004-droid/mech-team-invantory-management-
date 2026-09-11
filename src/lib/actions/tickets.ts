@@ -93,11 +93,11 @@ export async function updateTicketStatus(
         select: { status: true },
       });
 
-      if (!ticket) return { message: "That ticket no longer exists." };
+      if (!ticket) return { message: "That maintenance job no longer exists." };
 
       if (!nextTicketStatuses(ticket.status).includes(toStatus)) {
         return {
-          message: `A ticket that is ${ticket.status
+          message: `A job that is ${ticket.status
             .toLowerCase()
             .replace("_", " ")} cannot move straight to ${toStatus
             .toLowerCase()
@@ -124,7 +124,7 @@ export async function updateTicketStatus(
         },
       });
 
-      return { success: "Ticket updated." };
+      return { success: "Maintenance job updated." };
     });
 
     revalidatePath("/tickets");
@@ -154,7 +154,7 @@ export async function assignTicket(
         select: { assignedTo: { select: { id: true, name: true } } },
       });
 
-      if (!ticket) return { message: "That ticket no longer exists." };
+      if (!ticket) return { message: "That maintenance job no longer exists." };
       if ((ticket.assignedTo?.id ?? null) === assignedToId) return {};
 
       const assignee = assignedToId

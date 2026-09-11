@@ -333,7 +333,7 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
           ) : null}
 
           <Card>
-            <CardHeader title="Repair tickets" />
+            <CardHeader title="Maintenance" />
 
             {tool.tickets.length === 0 ? (
               <EmptyState

@@ -181,7 +181,7 @@ export default async function DashboardPage() {
           href="/requisitions"
         />
         <StatTile
-          label="Open tickets"
+          label="Open maintenance"
           value={openTickets.length}
           hint="Reported faults not yet resolved"
           tone="accent"
@@ -351,7 +351,7 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader
-            title="Open repair tickets"
+            title="Open maintenance jobs"
             description="Most severe and longest open first."
             action={
               <Link

@@ -71,7 +71,7 @@ export default async function EditToolPage(
             <div className="border-t border-line px-5 py-4">
               <p className="text-sm text-body">
                 Deleting removes {tool.name} along with its entire history and
-                every repair ticket raised against it. That cannot be undone,
+                every maintenance job raised against it. That cannot be undone,
                 and the audit trail goes with it.
               </p>
 

@@ -29,9 +29,9 @@ export default async function NewTicketPage(props: PageProps<"/tickets/new">) {
       <PageHeader
         eyebrow="Maintenance"
         title="Report a problem"
-        description="Anything broken, worn or behaving oddly. The ticket stays attached to the tool's history."
+        description="Anything broken, worn or behaving oddly. The job stays attached to the tool's history."
         backHref="/tickets"
-        backLabel="Back to tickets"
+        backLabel="Back to maintenance"
       />
 
       <Card>

@@ -38,7 +38,7 @@ export async function generateMetadata(
     select: { title: true },
   });
 
-  return { title: ticket?.title ?? "Ticket" };
+  return { title: ticket?.title ?? "Maintenance" };
 }
 
 /** Status codes are stored raw in the event log, so label them for display. */
@@ -98,10 +98,10 @@ export default async function TicketDetailPage(
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader
-        eyebrow="Repair ticket"
+        eyebrow="Maintenance job"
         title={ticket.title}
         backHref="/tickets"
-        backLabel="Back to tickets"
+        backLabel="Back to maintenance"
         description={
           <div className="flex flex-wrap items-center gap-2">
             <TicketStatusBadge status={ticket.status} />
@@ -225,7 +225,7 @@ export default async function TicketDetailPage(
             <Card>
               <CardBody>
                 <p className="text-sm text-body">
-                  This ticket is{" "}
+                  This job is{" "}
                   <span className="font-medium text-ink">
                     {TICKET_STATUS_LABELS[ticket.status].toLowerCase()}
                   </span>

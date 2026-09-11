@@ -373,7 +373,7 @@ export async function deleteTools(
     revalidatePath("/dashboard");
 
     return {
-      success: `Removed ${count} ${count === 1 ? "item" : "items"}, along with their history and any repair tickets raised against them.`,
+      success: `Removed ${count} ${count === 1 ? "item" : "items"}, along with their history and any maintenance jobs raised against them.`,
     };
   } catch (error) {
     return toActionState(error);
@@ -421,7 +421,7 @@ export async function removeSampleData(): Promise<ActionState> {
     }
 
     return {
-      success: `Removed ${removed.tools} sample items, ${removed.requests} sample requests and ${removed.tickets} sample tickets. Sample storage locations were left alone, so your own items keep somewhere to live.`,
+      success: `Removed ${removed.tools} sample items, ${removed.requests} sample requests and ${removed.tickets} sample maintenance jobs. Sample storage locations were left alone, so your own items keep somewhere to live.`,
     };
   } catch (error) {
     return toActionState(error);

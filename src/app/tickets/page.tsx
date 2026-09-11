@@ -22,7 +22,7 @@ import {
 } from "@/lib/display";
 import { can } from "@/lib/permissions";
 
-export const metadata: Metadata = { title: "Repair tickets" };
+export const metadata: Metadata = { title: "Maintenance" };
 export const dynamic = "force-dynamic";
 
 function first(value: string | string[] | undefined): string {
@@ -83,7 +83,7 @@ export default async function TicketsPage(props: PageProps<"/tickets">) {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Maintenance"
-        title="Repair tickets"
+        title="Maintenance"
         description={
           can(user.role, "ticket:manage")
             ? "Every fault reported against a tool, and who is dealing with it. Assign them and move them through to resolved."
@@ -152,14 +152,14 @@ export default async function TicketsPage(props: PageProps<"/tickets">) {
                 ? "Everything has someone on it"
                 : view
                   ? "Nothing at this stage"
-                  : "No tickets open"
+                  : "Nothing needs maintenance"
             }
             description={
               view === UNCLAIMED
                 ? "Every reported problem has been given to somebody."
                 : view
                   ? "Try another filter to see the rest."
-                  : "Nothing is reported as broken. Open a ticket when something fails."
+                  : "Nothing is reported as broken. Report a problem when something fails."
             }
             action={
               view ? null : (

@@ -55,7 +55,7 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   SUPER_ADMIN:
     "Full access, including storage locations, team accounts and roles.",
   INVENTORY_MANAGER:
-    "Manages stock, requests and repair tickets. Cannot add or remove storage locations, or manage accounts.",
+    "Manages stock, requests and maintenance. Cannot add or remove storage locations, or manage accounts.",
   TEAMMATE:
-    "Can search stock, follow repair tickets, raise requests and report faults.",
+    "Can search stock, follow maintenance, raise requests and report faults.",
 };

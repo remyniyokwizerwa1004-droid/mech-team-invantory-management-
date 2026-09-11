@@ -50,7 +50,7 @@ export function SampleDataCard({ sampleCount }: { sampleCount: number }) {
             </p>
             <p className="mt-1 text-sm text-body">
               The app shipped with {sampleCount} example items, plus the
-              requests and tickets attached to them, so every screen had
+              requests and maintenance jobs attached to them, so every screen had
               something to show. Removing them leaves your storage locations
               and team accounts alone, so you can start adding real stock right
               away.
@@ -189,7 +189,7 @@ export function ToolManager({ tools }: { tools: ManagedTool[] }) {
         <p className="flex items-start gap-2 border-b border-line bg-critical-soft px-4 py-2.5 text-sm text-critical">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           This removes {selected.size} {selected.size === 1 ? "item" : "items"}{" "}
-          for good, along with their history and any repair tickets raised
+          for good, along with their history and any maintenance jobs raised
           against them. It cannot be undone.
         </p>
       ) : null}

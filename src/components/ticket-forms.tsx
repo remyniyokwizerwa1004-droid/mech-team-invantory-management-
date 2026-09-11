@@ -96,7 +96,7 @@ export function NewTicketForm({
         </Select>
       </Field>
 
-      <SubmitButton pendingLabel="Opening…">Open ticket</SubmitButton>
+      <SubmitButton pendingLabel="Reporting…">Report it</SubmitButton>
     </form>
   );
 }

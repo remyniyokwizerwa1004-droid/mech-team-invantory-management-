@@ -36,7 +36,7 @@ export async function SiteHeader() {
     links.push({ href: "/requisitions", label: "Requests" });
     links.push({
       href: "/tickets",
-      label: "Tickets",
+      label: "Maintenance",
       count: unattended,
       countLabel: "with nobody on them",
     });

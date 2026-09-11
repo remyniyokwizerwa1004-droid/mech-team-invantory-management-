@@ -120,7 +120,7 @@ export default async function UsersPage() {
                     <p className="text-xs text-muted sm:col-span-2">
                       Joined {formatDate(user.createdAt)} ·{" "}
                       {user._count.requestsMade} requests raised ·{" "}
-                      {user._count.ticketsOpened} tickets opened
+                      {user._count.ticketsOpened} faults reported
                     </p>
                   </div>
                 </details>
