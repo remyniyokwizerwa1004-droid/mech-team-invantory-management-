@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/*
+ * One palette for the whole app. Everything else refers to these names, so
+ * changing the brand colour here changes it everywhere, and a dark theme later
+ * means redefining this block rather than hunting through components.
+ */
+@theme {
+  /* Surfaces */
+  --color-canvas: #f4f7fa;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f8fafc;
+
+  /* Text */
+  --color-ink: #0b1b2b;
+  --color-body: #46586d;
+  --color-muted: #6b7f95;
+
+  /* Lines */
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  /* Brand: a deep steel blue that reads as engineering, not consumer app. */
+  --color-brand: #0d4f8b;
+  --color-brand-dark: #0a3c6b;
+  --color-brand-soft: #e9f1fa;
+  --color-brand-line: #c3daf1;
+
+  /* Status tones, each a text / background / border trio. */
+  --color-positive: #056344;
+  --color-positive-soft: #e6f6ee;
+  --color-positive-line: #b3e2cb;
+
+  --color-warning: #8a5200;
+  --color-warning-soft: #fdf4e3;
+  --color-warning-line: #f2dcae;
+
+  --color-critical: #a4232a;
+  --color-critical-soft: #fdedee;
+  --color-critical-line: #f4c8cb;
+
+  --color-neutral: #475569;
+  --color-neutral-soft: #f1f4f8;
+  --color-neutral-line: #dce3ec;
+
+  --color-info: #1e4c8a;
+  --color-info-soft: #eaf1fb;
+  --color-info-line: #c6daf3;
+
+  --color-accent: #5b3aa8;
+  --color-accent-soft: #f2edfd;
+  --color-accent-line: #ded0f7;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 0.75rem;
+
+  --shadow-card: 0 1px 2px rgb(11 27 43 / 0.05);
+  --shadow-raised: 0 4px 16px -4px rgb(11 27 43 / 0.12);
+  --shadow-pop: 0 12px 32px -8px rgb(11 27 43 / 0.2);
+}
+
+/*
+ * The palette above is light. Pinning color-scheme stops the browser painting
+ * its own dark form controls and scrollbars over it on a machine set to dark.
+ */
+:root {
+  color-scheme: light;
+}
+
+/*
+ * A drafting-paper grid with a soft brand wash over the top of the page.
+ * Both are pitched to sit just under the threshold of being noticed: the page
+ * reads as having depth and material, without anything competing with the
+ * content. Drawn in CSS rather than loaded as an image, so it costs no
+ * requests and stays crisp at any zoom.
+ */
+body {
+  background-color: var(--color-canvas);
+  background-image:
+    radial-gradient(
+      52rem 28rem at 50% 4rem,
+      rgb(13 79 139 / 0.09),
+      transparent 70%
+    ),
+    linear-gradient(to right, rgb(11 27 43 / 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(11 27 43 / 0.028) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    44px 44px,
+    44px 44px;
+  background-repeat: no-repeat, repeat, repeat;
+  background-position: top center, top left, top left;
+  color: var(--color-body);
+  font-family: var(--font-sans);
+}
+
+/* The grid is decoration. Anyone who has asked for less motion and contrast
+   noise gets the plain surface instead. */
+@media (prefers-contrast: more) {
+  body {
+    background-image: none;
+  }
+}
+
+/* A visible focus ring everywhere, since this app is used with gloves on. */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Numbers line up in columns when they are tabular. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
