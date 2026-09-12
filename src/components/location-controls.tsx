@@ -21,6 +21,10 @@ export function LocationForm({
     code: string | null;
     description: string | null;
     parentId: string | null;
+    detailLabel: string | null;
+    detailHint: string | null;
+    detailRequired: boolean;
+    contactName: string | null;
   };
   parents: LocationOption[];
   submitLabel: string;
@@ -102,6 +106,82 @@ export function LocationForm({
           />
         </Field>
       </div>
+
+      <details className="rounded-lg border border-line bg-surface-sunken">
+        <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-ink">
+          What should people record about the exact spot here?
+        </summary>
+
+        <div className="space-y-3 border-t border-line px-3 py-3">
+          <p className="text-sm text-body">
+            Somewhere like a drawer unit needs a drawer number; an open
+            warehouse floor needs a description. Set the question this place
+            asks, and everyone adding an item here gets prompted for it.
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field
+              label="Call that field"
+              htmlFor={`detailLabel-${location?.id ?? "new"}`}
+              hint="Leave blank for a plain “Exact spot”."
+              error={state.errors?.detailLabel}
+            >
+              <Input
+                id={`detailLabel-${location?.id ?? "new"}`}
+                name="detailLabel"
+                defaultValue={location?.detailLabel ?? ""}
+                placeholder="Drawer number"
+              />
+            </Field>
+
+            <Field
+              label="Guidance under it"
+              htmlFor={`detailHint-${location?.id ?? "new"}`}
+              error={state.errors?.detailHint}
+            >
+              <Input
+                id={`detailHint-${location?.id ?? "new"}`}
+                name="detailHint"
+                defaultValue={location?.detailHint ?? ""}
+                placeholder="Which drawer, for example Locker 04"
+              />
+            </Field>
+
+            <Field
+              label="Who to ask"
+              htmlFor={`contactName-${location?.id ?? "new"}`}
+              hint="Shown to anyone looking for an item kept here."
+              error={state.errors?.contactName}
+              className="sm:col-span-2"
+            >
+              <Input
+                id={`contactName-${location?.id ?? "new"}`}
+                name="contactName"
+                defaultValue={location?.contactName ?? ""}
+                placeholder="Ask at the front desk"
+              />
+            </Field>
+          </div>
+
+          <label className="flex items-start gap-3 rounded-lg border border-line bg-surface p-3">
+            <input
+              type="checkbox"
+              name="detailRequired"
+              defaultChecked={location?.detailRequired}
+              className="mt-0.5 size-4 rounded border-line-strong text-brand"
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">
+                Make it compulsory
+              </span>
+              <span className="block text-sm text-muted">
+                Nobody can save an item here without saying exactly where it
+                sits.
+              </span>
+            </span>
+          </label>
+        </div>
+      </details>
 
       <SubmitButton size="sm" pendingLabel="Saving…">
         {submitLabel}

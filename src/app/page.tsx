@@ -22,7 +22,12 @@ import type { Prisma, ToolStatus } from "@/generated/prisma/client";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatRelative, TOOL_STATUS_LABELS } from "@/lib/display";
-import { getLocations, locationOptions, pathFor, withDescendants } from "@/lib/locations";
+import {
+  fullLocation,
+  getLocations,
+  locationOptions,
+  withDescendants,
+} from "@/lib/locations";
 import { can } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
@@ -98,6 +103,7 @@ export default async function InventoryPage(props: PageProps<"/">) {
       unit: true,
       status: true,
       storageLocationId: true,
+      locationDetail: true,
       updatedAt: true,
     },
   });
@@ -243,7 +249,11 @@ export default async function InventoryPage(props: PageProps<"/">) {
                       <span aria-hidden>·</span>
                       <span className="inline-flex items-center gap-1">
                         <MapPin className="size-3" aria-hidden />
-                        {pathFor(locations, tool.storageLocationId)}
+                        {fullLocation(
+                          locations,
+                          tool.storageLocationId,
+                          tool.locationDetail,
+                        )}
                       </span>
                       <span aria-hidden>·</span>
                       <span>{formatRelative(tool.updatedAt)}</span>
@@ -255,7 +265,11 @@ export default async function InventoryPage(props: PageProps<"/">) {
                     </p>
 
                     <p className="hidden truncate text-sm text-body md:block">
-                      {pathFor(locations, tool.storageLocationId)}
+                      {fullLocation(
+                        locations,
+                        tool.storageLocationId,
+                        tool.locationDetail,
+                      )}
                     </p>
 
                     <p className="hidden text-xs text-muted md:block">

@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { deleteTool } from "@/lib/actions/tools";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getLocations, locationOptions } from "@/lib/locations";
+import { getLocations, locationChoices } from "@/lib/locations";
 import { can } from "@/lib/permissions";
 
 export const metadata: Metadata = { title: "Edit tool" };
@@ -53,11 +53,12 @@ export default async function EditToolPage(
           unit: tool.unit,
           lowStockThreshold: tool.lowStockThreshold,
           storageLocationId: tool.storageLocationId ?? "",
+          locationDetail: tool.locationDetail ?? "",
           notes: tool.notes ?? "",
           retired: tool.status === "RETIRED",
         }}
         categories={categories.map((row) => row.category)}
-        locations={locationOptions(locations)}
+        locations={locationChoices(locations)}
       />
 
       {can(user.role, "tool:delete") ? (

@@ -11,7 +11,7 @@ import { Pagination } from "@/components/ui/pagination";
 import type { Prisma } from "@/generated/prisma/client";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getLocations, pathFor } from "@/lib/locations";
+import { fullLocation, getLocations } from "@/lib/locations";
 import { isSampleTool, SAMPLE_PREFIXES } from "@/lib/sample-data";
 
 export const metadata: Metadata = { title: "Manage items" };
@@ -68,6 +68,7 @@ export default async function ManageToolsPage(
         unit: true,
         status: true,
         storageLocationId: true,
+        locationDetail: true,
       },
     }),
     getLocations(),
@@ -115,7 +116,11 @@ export default async function ManageToolsPage(
             quantity: tool.quantity,
             unit: tool.unit,
             status: tool.status,
-            location: pathFor(locations, tool.storageLocationId),
+            location: fullLocation(
+              locations,
+              tool.storageLocationId,
+              tool.locationDetail,
+            ),
             isSample: isSampleTool(tool.id),
           }))}
         />

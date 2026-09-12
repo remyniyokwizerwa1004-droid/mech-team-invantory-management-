@@ -108,8 +108,21 @@ model StorageLocation {
   code        String?  @unique
   description String?
   parentId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  // Each place stores things its own way. A drawer unit wants a drawer
+  // number, a shelf wants a row, a warehouse floor wants a free description.
+  // Holding that guidance on the location means the item form can ask the
+  // right question, and new locations can set their own without a code change.
+  detailLabel    String?
+  detailHint     String?
+  detailRequired Boolean @default(false)
+
+  // Who to ask about things kept here. Used for the office, where items are
+  // on someone's desk rather than in a labelled place.
+  contactName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   parent   StorageLocation?  @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children StorageLocation[] @relation("LocationHierarchy")
@@ -138,7 +151,13 @@ model Tool {
   notes  String?
 
   storageLocationId String?
-  createdById       String?
+
+  // Exactly where inside that location: "Locker 04", "Row 3", "Box 12".
+  // Shown to everyone, including the public search, because knowing the room
+  // is not the same as being able to put your hand on the thing.
+  locationDetail String?
+
+  createdById String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

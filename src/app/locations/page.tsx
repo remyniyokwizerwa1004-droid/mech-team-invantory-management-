@@ -28,6 +28,10 @@ export default async function LocationsPage() {
         code: true,
         description: true,
         parentId: true,
+        detailLabel: true,
+        detailHint: true,
+        detailRequired: true,
+        contactName: true,
       },
     }),
     prisma.tool.groupBy({

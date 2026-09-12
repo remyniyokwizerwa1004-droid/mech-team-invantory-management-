@@ -7,6 +7,7 @@ import {
   MapPin,
   Pencil,
   ShoppingCart,
+  UserRound,
   Wrench,
 } from "lucide-react";
 
@@ -30,7 +31,7 @@ import {
   INVENTORY_ACTION_LABELS,
   TOOL_STATUS_LABELS,
 } from "@/lib/display";
-import { getLocations, pathFor } from "@/lib/locations";
+import { contactFor, fullLocation, getLocations } from "@/lib/locations";
 import { can } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
@@ -104,6 +105,10 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
   const canRaise = user ? can(user.role, "requisition:create") : false;
   const canOpenTicket = user ? can(user.role, "ticket:create") : false;
 
+  // Somewhere like the office keeps things on a person's desk rather than in
+  // a labelled place, so the location carries a name to ask for.
+  const askFor = contactFor(locations, tool.storageLocationId);
+
   const facts = [
     {
       label: "Quantity",
@@ -116,12 +121,31 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
     {
       label: "Location",
       value: (
-        <span className="inline-flex items-center gap-1.5">
-          <MapPin className="size-3.5 text-muted" aria-hidden />
-          {pathFor(locations, tool.storageLocationId)}
+        <span className="inline-flex items-start gap-1.5">
+          <MapPin className="mt-0.5 size-3.5 shrink-0 text-muted" aria-hidden />
+          <span>
+            {fullLocation(
+              locations,
+              tool.storageLocationId,
+              tool.locationDetail,
+            )}
+          </span>
         </span>
       ),
     },
+    ...(askFor
+      ? [
+          {
+            label: "Who to ask",
+            value: (
+              <span className="inline-flex items-center gap-1.5">
+                <UserRound className="size-3.5 text-muted" aria-hidden />
+                {askFor}
+              </span>
+            ),
+          },
+        ]
+      : []),
     {
       label: "Low-stock level",
       value: (

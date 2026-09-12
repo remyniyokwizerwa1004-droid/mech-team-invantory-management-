@@ -19,6 +19,10 @@ const LocationSchema = z.object({
   code: z.string().optional(),
   description: z.string().optional(),
   parentId: z.string().optional(),
+  detailLabel: z.string().max(60, "Keep the field name short.").optional(),
+  detailHint: z.string().max(160, "Keep the guidance short.").optional(),
+  detailRequired: z.boolean(),
+  contactName: z.string().max(80, "Keep the name short.").optional(),
 });
 
 export async function saveLocation(
@@ -33,6 +37,10 @@ export async function saveLocation(
       code: optionalText(formData, "code"),
       description: optionalText(formData, "description"),
       parentId: optionalText(formData, "parentId"),
+      detailLabel: optionalText(formData, "detailLabel"),
+      detailHint: optionalText(formData, "detailHint"),
+      detailRequired: formData.get("detailRequired") === "on",
+      contactName: optionalText(formData, "contactName"),
     });
 
     if (!parsed.success) {
@@ -61,6 +69,10 @@ export async function saveLocation(
       code: code ?? null,
       description: description ?? null,
       parentId: parentId ?? null,
+      detailLabel: parsed.data.detailLabel ?? null,
+      detailHint: parsed.data.detailHint ?? null,
+      detailRequired: parsed.data.detailRequired,
+      contactName: parsed.data.contactName ?? null,
     };
 
     if (id) {
@@ -71,6 +83,7 @@ export async function saveLocation(
 
     revalidatePath("/locations");
     revalidatePath("/");
+    revalidatePath("/tools/new");
 
     return { success: id ? "Location updated." : `Added ${name}.` };
   } catch (error) {

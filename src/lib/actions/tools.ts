@@ -8,7 +8,7 @@ import type { InventoryAction, Prisma } from "@/generated/prisma/client";
 import { assertPermission } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { deriveStatus } from "@/lib/inventory";
-import { getLocations, pathFor } from "@/lib/locations";
+import { fullLocation, getLocations } from "@/lib/locations";
 import { SAMPLE_PREFIXES } from "@/lib/sample-data";
 import {
   fieldErrors,
@@ -32,6 +32,7 @@ const ToolSchema = z.object({
     .int("Use a whole number.")
     .min(0, "The low-stock level cannot be negative."),
   storageLocationId: z.string().optional(),
+  locationDetail: z.string().max(200, "Keep the exact spot short.").optional(),
   notes: z.string().optional(),
   retired: z.boolean(),
 });
@@ -79,6 +80,7 @@ export async function saveTool(
       unit: text(formData, "unit") || "pcs",
       lowStockThreshold: numberField(formData, "lowStockThreshold"),
       storageLocationId: optionalText(formData, "storageLocationId"),
+      locationDetail: optionalText(formData, "locationDetail"),
       notes: optionalText(formData, "notes"),
       retired: formData.get("retired") === "on",
     });
@@ -90,6 +92,18 @@ export async function saveTool(
     const input = parsed.data;
     const toolId = optionalText(formData, "id");
     const locations = await getLocations();
+
+    // Somewhere like a drawer unit is useless without the drawer number, so
+    // the location itself decides whether the exact spot is compulsory.
+    const place = locations.find((l) => l.id === input.storageLocationId);
+
+    if (place?.detailRequired && !input.locationDetail) {
+      return {
+        errors: {
+          locationDetail: `${place.detailLabel?.trim() || "The exact spot"} is needed for anything kept in ${place.name}.`,
+        },
+      };
+    }
 
     // RETIRED is a human decision; everything else follows the quantity.
     const status = input.retired
@@ -103,6 +117,7 @@ export async function saveTool(
       unit: input.unit,
       lowStockThreshold: input.lowStockThreshold,
       storageLocationId: input.storageLocationId ?? null,
+      locationDetail: input.locationDetail ?? null,
       notes: input.notes ?? null,
       status,
     };
@@ -118,7 +133,7 @@ export async function saveTool(
           {
             action: "CREATED",
             newValue: `${data.quantity} ${data.unit}`,
-            note: `Added to ${pathFor(locations, data.storageLocationId)}`,
+            note: `Added to ${fullLocation(locations, data.storageLocationId, data.locationDetail)}`,
           },
         ]);
 
@@ -136,6 +151,7 @@ export async function saveTool(
           notes: true,
           status: true,
           storageLocationId: true,
+          locationDetail: true,
         },
       });
 
@@ -165,12 +181,23 @@ export async function saveTool(
         });
       }
 
-      if (before.storageLocationId !== data.storageLocationId) {
+      const movedPlace = before.storageLocationId !== data.storageLocationId;
+      const movedSpot = (before.locationDetail ?? "") !== (data.locationDetail ?? "");
+
+      if (movedPlace || movedSpot) {
         entries.push({
           action: "LOCATION_CHANGED",
-          field: "storageLocation",
-          oldValue: pathFor(locations, before.storageLocationId),
-          newValue: pathFor(locations, data.storageLocationId),
+          field: movedPlace ? "storageLocation" : "locationDetail",
+          oldValue: fullLocation(
+            locations,
+            before.storageLocationId,
+            before.locationDetail,
+          ),
+          newValue: fullLocation(
+            locations,
+            data.storageLocationId,
+            data.locationDetail,
+          ),
         });
       }
 

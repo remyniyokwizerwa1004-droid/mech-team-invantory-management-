@@ -1,7 +1,8 @@
 "use client";
 
+import { MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { buttonClasses } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -18,8 +19,19 @@ export type ToolFormValues = {
   unit: string;
   lowStockThreshold: number;
   storageLocationId: string;
+  locationDetail: string;
   notes: string;
   retired: boolean;
+};
+
+/** A location plus the question it wants asked about the exact spot. */
+export type LocationChoice = {
+  id: string;
+  label: string;
+  detailLabel: string;
+  detailHint: string;
+  detailRequired: boolean;
+  contactName: string | null;
 };
 
 export function ToolForm({
@@ -29,7 +41,7 @@ export function ToolForm({
 }: {
   tool?: ToolFormValues;
   categories: string[];
-  locations: Array<{ id: string; label: string }>;
+  locations: LocationChoice[];
 }) {
   const [state, formAction] = useActionState<ActionState, FormData>(
     saveTool,
@@ -37,6 +49,12 @@ export function ToolForm({
   );
 
   const isEditing = Boolean(tool?.id);
+
+  // The exact-spot question changes with the place chosen: a drawer unit asks
+  // for a drawer number, a warehouse floor asks for a description. Tracking
+  // the selection in state lets the field relabel itself as you choose.
+  const [locationId, setLocationId] = useState(tool?.storageLocationId ?? "");
+  const selected = locations.find((location) => location.id === locationId);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -90,26 +108,6 @@ export function ToolForm({
           </Field>
 
           <Field
-            label="Storage location"
-            htmlFor="storageLocationId"
-            hint="Where someone should go to find it."
-            error={state.errors?.storageLocationId}
-          >
-            <Select
-              id="storageLocationId"
-              name="storageLocationId"
-              defaultValue={tool?.storageLocationId ?? ""}
-            >
-              <option value="">Not assigned yet</option>
-              {locations.map((location) => (
-                <option key={location.id} value={location.id}>
-                  {location.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          <Field
             label="Notes"
             htmlFor="notes"
             hint="Anything the next person should know. Shown publicly."
@@ -124,6 +122,79 @@ export function ToolForm({
               placeholder="Calibration due every 12 months."
             />
           </Field>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Where it lives"
+          description="Everyone sees this, including people searching without an account. Be specific enough that someone can walk up and take it."
+        />
+
+        <CardBody className="space-y-4">
+          <Field
+            label="Storage location"
+            htmlFor="storageLocationId"
+            required
+            hint="The building or area to go to."
+            error={state.errors?.storageLocationId}
+          >
+            <Select
+              id="storageLocationId"
+              name="storageLocationId"
+              value={locationId}
+              onChange={(event) => setLocationId(event.target.value)}
+            >
+              <option value="">Not assigned yet</option>
+              {locations.map((location) => (
+                <option key={location.id} value={location.id}>
+                  {location.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field
+            label={selected ? selected.detailLabel : "Exact spot"}
+            htmlFor="locationDetail"
+            required={selected?.detailRequired ?? false}
+            hint={
+              selected
+                ? selected.detailHint
+                : "Choose a storage location first and this will ask for the right detail."
+            }
+            error={state.errors?.locationDetail}
+          >
+            <Input
+              id="locationDetail"
+              name="locationDetail"
+              defaultValue={tool?.locationDetail}
+              placeholder={selected ? selected.detailHint : ""}
+            />
+          </Field>
+
+          {selected?.contactName ? (
+            <p className="flex items-start gap-2 rounded-lg border border-line bg-surface-sunken p-3 text-sm text-body">
+              <UserRound className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
+              <span>
+                Anyone looking for this will be told to ask{" "}
+                <span className="font-medium text-ink">
+                  {selected.contactName}
+                </span>
+                . Change that under Locations.
+              </span>
+            </p>
+          ) : null}
+
+          {!selected ? (
+            <p className="flex items-start gap-2 rounded-lg border border-line bg-surface-sunken p-3 text-sm text-muted">
+              <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>
+                An item with no location still appears in search, but nobody
+                will know where to find it.
+              </span>
+            </p>
+          ) : null}
         </CardBody>
       </Card>
 

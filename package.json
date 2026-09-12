@@ -16,7 +16,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:admin": "tsx prisma/create-admin.ts",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "db:locations": "tsx prisma/setup-locations.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
