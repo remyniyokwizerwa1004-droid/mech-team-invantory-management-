@@ -1,7 +1,7 @@
 # Mechanical Team Inventory
 
 A web app for tracking the mechanical team's tools and materials, the requests to
-restock them, and the repair tickets raised against them.
+restock them, and the maintenance raised against them.
 
 **Anyone with the link can search stock and locations without signing in.**
 Everything that changes data needs an account, and what each account may change
@@ -37,7 +37,7 @@ The seed creates one account per role. They all use the password
 | Email                    | Role              | Can do                                            |
 | ------------------------ | ----------------- | ------------------------------------------------- |
 | `admin@mechteam.local`   | Super admin       | Everything, including locations and team accounts |
-| `manager@mechteam.local` | Inventory manager | Stock, requests, tickets. Not locations           |
+| `manager@mechteam.local` | Inventory manager | Stock, requests, maintenance. Not locations       |
 | `tech@mechteam.local`    | Teammate          | Raise requests, report faults, add notes          |
 
 Storage locations are super admin only. Every item is filed under one, so
@@ -57,6 +57,7 @@ as the super admin, open **Team**, and reset each one.
 | `npm run db:reset`   | Wipe the database and rebuild it from scratch           |
 | `npm run db:seed`    | Reload the example data (local only, never production)  |
 | `npm run db:admin`   | Create or reset a super admin account                   |
+| `npm run db:locations` | Create the warehouse and office structure             |
 
 ---
 
@@ -97,7 +98,7 @@ src/app/                  One folder per page
   tools/manage/             Bulk removal and clearing the example data
   dashboard/                Reporting, managers and admins only
   requisitions/             Procurement requests
-  tickets/                  Repair tickets
+  tickets/                  Maintenance jobs (the route keeps its old name)
   locations/                Storage location management
   admin/users/              Team accounts, super admin only
 
@@ -128,10 +129,35 @@ in `src/lib/inventory.ts`.
 **Locations nest.** A shelf sits inside a room. Searching the room finds
 everything on its shelves, because the query expands to the whole branch.
 
-**A repair ticket says who is on it, not just what stage it is at.** A fault
+**Each location asks its own question.** Knowing something is in Warehouse 1
+does not help anyone find it, so every item also records an exact spot. What
+that field is called, and whether it is compulsory, is stored on the location
+rather than written into the code:
+
+| Location | Asks for | Example |
+| --- | --- | --- |
+| Warehouse 1 › Stock room | Box label | Box 14 |
+| Warehouse 1 › Drawers | Drawer number | Locker 04 |
+| Warehouse 1 › Main shelves | Row or box | Row 3 |
+| Warehouse 1 › Manager's table | Where on the table | Left tray |
+| Warehouse 2 | Exact position | Back corner by the door |
+| Office | Exact position | Second cupboard, top shelf |
+
+Both halves show to everyone, signed out included, as one line:
+`Warehouse 1 › Drawers — Locker 04`.
+
+A location can also name someone to ask, which suits places like the office
+where things sit on a person's desk. It is optional, just a name, and it is
+inherited by anything nested inside.
+
+Add a location on the **Locations** page and set its question there. Run
+`npm run db:locations` to recreate the structure above from scratch; it
+matches on the short code, so it updates rather than duplicates.
+
+**A maintenance job says who is on it, not just what stage it is at.** A fault
 can sit at "Open" for a fortnight with nobody assigned, and in a list that
-looks the same as one somebody picked up an hour ago. So every ticket also
-shows one of four states, derived in `src/lib/tickets.ts`:
+looks the same as one somebody picked up an hour ago. So every job also shows
+one of four states, derived in `src/lib/tickets.ts`:
 
 | State | Means |
 | --- | --- |
@@ -141,7 +167,10 @@ shows one of four states, derived in `src/lib/tickets.ts`:
 | Dealt with | Resolved or closed |
 
 Unattended faults sort to the top of the list, show a red banner above it, and
-put a count on the Tickets tab that everyone on the team sees from every page.
+put a count on the Maintenance tab that everyone sees from every page.
+
+The word "ticket" survives in the database model, the route and the code. Only
+the wording people read was changed, so old links still work.
 
 ---
 
@@ -171,7 +200,7 @@ change writes an audit row, so a busy year adds far more log rows than tools.
 
 The app ships with 28 example items so every screen has something to show.
 Sign in as a super admin, open **Manage items**, and use **Remove all sample
-items**. That clears the example tools with their requests and tickets, and
+items**. That clears the example tools with their requests and maintenance, and
 leaves your storage locations and team accounts alone.
 
 Sample records are recognised by their fixed id prefixes, set in
@@ -283,5 +312,5 @@ will not appear on the live site.
   what gets deployed. Nothing in the shipped app is affected.
 - Times are shown in the server's timezone. On Vercel that is UTC. Set a `TZ`
   environment variable if the team would rather see local time.
-- Photos on repair tickets are not built yet. The data model has room for them
+- Photos on maintenance jobs are not built yet. The data model has room for them
   and it is the natural next feature.

@@ -181,7 +181,7 @@ export function ToolForm({
                 <span className="font-medium text-ink">
                   {selected.contactName}
                 </span>
-                . Change that under Locations.
+                , who looks after this location. Change it under Locations.
               </span>
             </p>
           ) : null}

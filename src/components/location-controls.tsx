@@ -150,7 +150,7 @@ export function LocationForm({
             <Field
               label="Who to ask"
               htmlFor={`contactName-${location?.id ?? "new"}`}
-              hint="Shown to anyone looking for an item kept here."
+              hint="Optional. Just a name, shown to anyone looking for something kept here. Leave blank if nobody in particular looks after it."
               error={state.errors?.contactName}
               className="sm:col-span-2"
             >
@@ -158,7 +158,7 @@ export function LocationForm({
                 id={`contactName-${location?.id ?? "new"}`}
                 name="contactName"
                 defaultValue={location?.contactName ?? ""}
-                placeholder="Ask at the front desk"
+                placeholder="Kastar"
               />
             </Field>
           </div>
