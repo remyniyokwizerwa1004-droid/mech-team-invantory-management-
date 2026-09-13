@@ -6,19 +6,32 @@
  * means redefining this block rather than hunting through components.
  */
 @theme {
-  /* Surfaces */
-  --color-canvas: #f4f7fa;
-  --color-surface: #ffffff;
-  --color-surface-sunken: #f8fafc;
+  /*
+   * Surfaces. Deliberately not pure white: a faint cool grey takes the glare
+   * off a page that is mostly cards and lists, which matters on a bright
+   * workshop screen. Cards stay a step lighter than the page behind them so
+   * they still lift off it.
+   */
+  --color-canvas: #eceff3;
+  --color-surface: #f9fafb;
+  --color-surface-sunken: #f1f4f7;
 
-  /* Text */
+  /* Text. Muted is darkened to keep 4.5:1 against the greyer surfaces. */
   --color-ink: #0b1b2b;
   --color-body: #46586d;
-  --color-muted: #6b7f95;
+  --color-muted: #5a6d82;
 
-  /* Lines */
-  --color-line: #e2e8f0;
-  --color-line-strong: #cbd5e1;
+  /* Lines, a touch stronger so edges survive the lower surface contrast. */
+  --color-line: #dce2e9;
+  --color-line-strong: #c5cfda;
+
+  /*
+   * The banner over the workshop photo. A deep teal navy, darkest where the
+   * headline sits so white text stays readable over any part of the image.
+   */
+  --color-hero: #0b2c42;
+  --color-hero-mid: #0f3d58;
+  --color-hero-light: #165c7a;
 
   /* Brand: a deep steel blue that reads as engineering, not consumer app. */
   --color-brand: #0d4f8b;
@@ -40,7 +53,7 @@
   --color-critical-line: #f4c8cb;
 
   --color-neutral: #475569;
-  --color-neutral-soft: #f1f4f8;
+  --color-neutral-soft: #e9edf2;
   --color-neutral-line: #dce3ec;
 
   --color-info: #1e4c8a;
@@ -67,6 +80,16 @@
  */
 :root {
   color-scheme: light;
+}
+
+/*
+ * The inventory banner breaks out of the page column to span the full window.
+ * On Windows the full window width includes the scrollbar, which would push
+ * the page sideways. Clipping, unlike hiding, does not break the sticky header.
+ */
+html,
+body {
+  overflow-x: clip;
 }
 
 /*

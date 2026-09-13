@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -116,77 +117,122 @@ export default async function InventoryPage(props: PageProps<"/">) {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            Tool and material inventory
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-body">
-            Search what the mechanical team has, whether it is in stock, and
-            exactly where it is kept. No sign-in needed to look something up.
-          </p>
-        </div>
+      {/*
+        The banner breaks out of the page column to run edge to edge, and pulls
+        up under the header so there is no strip of page between them. The
+        photo is decoration; the tint over it is darkest on the left, where the
+        headline sits, so white text stays readable wherever the image is busy.
+      */}
+      <section className="relative isolate -mt-8 mx-[calc(50%-50vw)] overflow-hidden">
+        <Image
+          src="/images/workshop-tool-wall.webp"
+          alt=""
+          aria-hidden
+          fill
+          sizes="100vw"
+          fetchPriority="high"
+          className="-z-20 object-cover object-[center_40%]"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-linear-to-r from-hero/95 via-hero-mid/85 to-hero-light/70"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 -z-10 h-32 bg-linear-to-t from-hero/70 to-transparent"
+        />
 
-        {user && can(user.role, "tool:write") ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {can(user.role, "tool:delete") ? (
-              <Link
-                href="/tools/manage"
-                className={buttonClasses({ variant: "secondary", size: "sm" })}
-              >
-                <Settings2 className="size-4" aria-hidden />
-                Manage items
-              </Link>
+        <div className="mx-auto max-w-6xl px-4 pt-10 pb-10 sm:px-6 sm:pt-14 sm:pb-12">
+          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold tracking-[0.18em] text-white/70 uppercase">
+                Mechanical team · Teleoperation robots
+              </p>
+              <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance text-white sm:text-5xl">
+                Find any tool, its stock level and exactly where it is stored.
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm text-pretty text-white/80 sm:text-base">
+                Open to the whole team, with no sign-in needed to search.
+                Signing in unlocks editing, requests, maintenance and reporting.
+              </p>
+            </div>
+
+            {user && can(user.role, "tool:write") ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {can(user.role, "tool:delete") ? (
+                  <Link
+                    href="/tools/manage"
+                    className={buttonClasses({
+                      variant: "secondary",
+                      size: "sm",
+                      className:
+                        "border-white/25 bg-white/10 text-white hover:bg-white/20",
+                    })}
+                  >
+                    <Settings2 className="size-4" aria-hidden />
+                    Manage items
+                  </Link>
+                ) : null}
+
+                <Link
+                  href="/tools/new"
+                  className={buttonClasses({
+                    size: "sm",
+                    className:
+                      "bg-white text-hero hover:bg-white/90 active:bg-white/90",
+                  })}
+                >
+                  <Plus className="size-4" aria-hidden />
+                  Add tool
+                </Link>
+              </div>
             ) : null}
-
-            <Link href="/tools/new" className={buttonClasses({ size: "sm" })}>
-              <Plus className="size-4" aria-hidden />
-              Add tool
-            </Link>
           </div>
-        ) : null}
-      </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          label="In stock"
-          value={countFor("AVAILABLE")}
-          hint="Ready to use"
-          tone="positive"
-          icon={CircleCheck}
-          href="/?status=AVAILABLE"
-        />
-        <StatTile
-          label="Low stock"
-          value={countFor("LOW_STOCK")}
-          hint="At or below the reorder point"
-          tone="warning"
-          icon={CircleAlert}
-          href="/?status=LOW_STOCK"
-        />
-        <StatTile
-          label="Finished"
-          value={countFor("FINISHED")}
-          hint="None left"
-          tone="critical"
-          icon={CircleSlash}
-          href="/?status=FINISHED"
-        />
-        <StatTile
-          label="Tracked items"
-          value={totalItems}
-          hint="Across every location"
-          tone="neutral"
-          icon={PackageSearch}
-          href="/"
-        />
-      </div>
+          <div className="mt-8">
+            <InventoryFilters
+              values={{ q, category, status, location: locationId }}
+              categories={categoryRows.map((row) => row.category)}
+              locations={locationOptions(locations)}
+            />
+          </div>
 
-      <InventoryFilters
-        values={{ q, category, status, location: locationId }}
-        categories={categoryRows.map((row) => row.category)}
-        locations={locationOptions(locations)}
-      />
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatTile
+              variant="glass"
+              label="Items tracked"
+              value={totalItems}
+              tone="neutral"
+              icon={PackageSearch}
+              href="/"
+            />
+            <StatTile
+              variant="glass"
+              label="In stock"
+              value={countFor("AVAILABLE")}
+              tone="positive"
+              icon={CircleCheck}
+              href="/?status=AVAILABLE"
+            />
+            <StatTile
+              variant="glass"
+              label="Low stock"
+              value={countFor("LOW_STOCK")}
+              tone="warning"
+              icon={CircleAlert}
+              href="/?status=LOW_STOCK"
+            />
+            <StatTile
+              variant="glass"
+              label="Finished"
+              value={countFor("FINISHED")}
+              tone="critical"
+              icon={CircleSlash}
+              href="/?status=FINISHED"
+            />
+          </div>
+        </div>
+      </section>
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
