@@ -93,6 +93,41 @@ body {
 }
 
 /*
+ * Anything sitting on the dark workshop photo. Rather than restyle every
+ * heading, badge and button that can appear in a page header, this redefines
+ * the text, surface and line colours for everything inside, so existing
+ * components turn light automatically. Status badges keep their own colours,
+ * which already carry their own light backgrounds.
+ *
+ * Deliberately outside a cascade layer: Tailwind's utilities live in one, and
+ * unlayered rules win over layered ones regardless of specificity.
+ */
+.on-dark {
+  --color-ink: #ffffff;
+  --color-body: rgb(255 255 255 / 0.86);
+  --color-muted: rgb(255 255 255 / 0.74);
+  --color-surface: rgb(255 255 255 / 0.1);
+  --color-surface-sunken: rgb(255 255 255 / 0.2);
+  --color-line: rgb(255 255 255 / 0.22);
+  --color-line-strong: rgb(255 255 255 / 0.32);
+  color: var(--color-body);
+}
+
+/* A brand-blue button disappears into a navy photo; make it white instead. */
+.on-dark .bg-brand {
+  background-color: #ffffff;
+  color: var(--color-hero);
+}
+
+.on-dark .bg-brand:hover {
+  background-color: rgb(255 255 255 / 0.9);
+}
+
+.on-dark .text-brand {
+  color: rgb(255 255 255 / 0.9);
+}
+
+/*
  * A drafting-paper grid with a soft brand wash over the top of the page.
  * Both are pitched to sit just under the threshold of being noticed: the page
  * reads as having depth and material, without anything competing with the

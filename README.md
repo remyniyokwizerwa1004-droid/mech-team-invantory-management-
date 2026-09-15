@@ -31,17 +31,17 @@ changes, copy the new URL into `.env`.
 
 ### Signing in
 
-The seed creates one account per role. They all use the password
-`ChangeMe123!`.
+There are two roles, and the seed creates one account for each. Both use the
+password `ChangeMe123!`.
 
-| Email                    | Role              | Can do                                            |
-| ------------------------ | ----------------- | ------------------------------------------------- |
-| `admin@mechteam.local`   | Super admin       | Everything, including locations and team accounts |
-| `manager@mechteam.local` | Inventory manager | Stock, requests, maintenance. Not locations       |
-| `tech@mechteam.local`    | Teammate          | Raise requests, report faults, add notes          |
+| Email                    | Role              | Can do                                                   |
+| ------------------------ | ----------------- | -------------------------------------------------------- |
+| `admin@mechteam.local`   | Super admin       | Everything, including adding people and choosing roles   |
+| `manager@mechteam.local` | Inventory manager | Everything else: stock, locations, requests, maintenance |
 
-Storage locations are super admin only. Every item is filed under one, so
-moving or deleting a location affects the whole inventory.
+Nobody needs an account to search the inventory. The only difference between
+the two roles is the **Team** page: a super admin adds people and sets their
+role, and a manager cannot.
 
 **Change these passwords before anyone outside the team gets the link.** Sign in
 as the super admin, open **Team**, and reset each one.
@@ -70,8 +70,7 @@ adding a fourth role later a one-line change.
 ```ts
 const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   SUPER_ADMIN: PERMISSIONS,
-  INVENTORY_MANAGER: ["tool:write", "tool:delete", "ticket:manage", ...],
-  TEAMMATE: ["requisition:create", "ticket:create"],
+  INVENTORY_MANAGER: PERMISSIONS.filter((p) => p !== "user:manage"),
 };
 ```
 

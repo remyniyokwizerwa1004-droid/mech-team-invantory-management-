@@ -30,7 +30,8 @@ release candidate, so the CLI is pinned to 7.10.0.
 
 - **Every server action starts with `assertPermission(...)`** from
   `src/lib/auth.ts`. Hiding a control in the UI is never the access control.
-  A teammate posting straight at an action must be refused by the action.
+  Anyone without the permission posting straight at an action must be
+  refused by the action.
 - **Ask for a permission, never a role.** Add capabilities to
   `src/lib/permissions.ts` so new roles stay a one-line change.
 - **Stock status is derived from quantity** in `src/lib/inventory.ts`, except

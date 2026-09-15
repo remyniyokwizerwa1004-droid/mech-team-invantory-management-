@@ -10,7 +10,7 @@ import { createUser, resetPassword, setUserActive, updateUserRole } from "@/lib/
 import type { ActionState } from "@/lib/actions/shared";
 import { ROLE_DESCRIPTIONS, ROLE_LABELS } from "@/lib/permissions";
 
-const ROLES: UserRole[] = ["TEAMMATE", "INVENTORY_MANAGER", "SUPER_ADMIN"];
+const ROLES: UserRole[] = ["INVENTORY_MANAGER", "SUPER_ADMIN"];
 
 export function CreateUserForm() {
   const [state, formAction] = useActionState<ActionState, FormData>(
@@ -25,7 +25,7 @@ export function CreateUserForm() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Name" htmlFor="new-name" required error={state.errors?.name}>
-          <Input id="new-name" name="name" placeholder="Grace Uwase" required />
+          <Input id="new-name" name="name" placeholder="Full name" required />
         </Field>
 
         <Field
@@ -38,13 +38,13 @@ export function CreateUserForm() {
             id="new-email"
             name="email"
             type="email"
-            placeholder="grace@mechteam.local"
+            placeholder="name@company.com"
             required
           />
         </Field>
 
         <Field label="Role" htmlFor="new-role" required error={state.errors?.role}>
-          <Select id="new-role" name="role" defaultValue="TEAMMATE">
+          <Select id="new-role" name="role" defaultValue="INVENTORY_MANAGER">
             {ROLES.map((role) => (
               <option key={role} value={role}>
                 {ROLE_LABELS[role]}

@@ -14,7 +14,7 @@ import {
   type ActionState,
 } from "@/lib/actions/shared";
 
-const ROLES: UserRole[] = ["SUPER_ADMIN", "INVENTORY_MANAGER", "TEAMMATE"];
+const ROLES: UserRole[] = ["SUPER_ADMIN", "INVENTORY_MANAGER"];
 
 const PasswordSchema = z
   .string()

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -18,6 +17,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pagination } from "@/components/ui/pagination";
+import { PhotoBackdrop } from "@/components/ui/photo-backdrop";
 import { StatTile } from "@/components/ui/stat-tile";
 import type { Prisma, ToolStatus } from "@/generated/prisma/client";
 import { getCurrentUser } from "@/lib/auth";
@@ -118,31 +118,14 @@ export default async function InventoryPage(props: PageProps<"/">) {
   return (
     <div className="space-y-6">
       {/*
-        The banner breaks out of the page column to run edge to edge, and pulls
-        up under the header so there is no strip of page between them. The
-        photo is decoration; the tint over it is darkest on the left, where the
-        headline sits, so white text stays readable wherever the image is busy.
+        The banner pulls up under the header so there is no strip of page
+        between them. The photo layer spans the full window; the search card
+        and counts stay aligned to the page column.
       */}
-      <section className="relative isolate -mt-8 mx-[calc(50%-50vw)] overflow-hidden">
-        <Image
-          src="/images/workshop-tool-wall.webp"
-          alt=""
-          aria-hidden
-          fill
-          sizes="100vw"
-          fetchPriority="high"
-          className="-z-20 object-cover object-[center_40%]"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-linear-to-r from-hero/95 via-hero-mid/85 to-hero-light/70"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 -z-10 h-32 bg-linear-to-t from-hero/70 to-transparent"
-        />
+      <section className="relative isolate -mt-8">
+        <PhotoBackdrop />
 
-        <div className="mx-auto max-w-6xl px-4 pt-10 pb-10 sm:px-6 sm:pt-14 sm:pb-12">
+        <div className="pt-10 pb-10 sm:pt-14 sm:pb-12">
           <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
             <div className="max-w-3xl">
               <p className="text-xs font-semibold tracking-[0.18em] text-white/70 uppercase">

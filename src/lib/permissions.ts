@@ -22,23 +22,12 @@ export type Permission = (typeof PERMISSIONS)[number];
 const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   SUPER_ADMIN: PERMISSIONS,
 
-  // Runs the stock day to day. Storage locations are deliberately not theirs:
-  // the shape of the workshop is a super admin decision, because moving or
-  // deleting a location affects every item filed under it.
-  INVENTORY_MANAGER: [
-    "tool:write",
-    "tool:delete",
-    "dashboard:view",
-    "requisition:create",
-    "requisition:decide",
-    "ticket:create",
-    "ticket:manage",
-  ],
-
-  // Teammates see everything the public sees, and can raise requests and open
-  // tickets. They cannot change stock, decide on requests, or see the
-  // management dashboard.
-  TEAMMATE: ["requisition:create", "ticket:create"],
+  // Runs the inventory end to end: stock, storage locations, requests,
+  // maintenance and reporting. The single thing withheld is deciding who has
+  // an account and what role they hold, which stays with a super admin.
+  INVENTORY_MANAGER: PERMISSIONS.filter(
+    (permission) => permission !== "user:manage",
+  ),
 };
 
 export function can(role: UserRole, permission: Permission): boolean {
@@ -48,14 +37,11 @@ export function can(role: UserRole, permission: Permission): boolean {
 export const ROLE_LABELS: Record<UserRole, string> = {
   SUPER_ADMIN: "Super admin",
   INVENTORY_MANAGER: "Inventory manager",
-  TEAMMATE: "Teammate",
 };
 
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   SUPER_ADMIN:
-    "Full access, including storage locations, team accounts and roles.",
+    "Everything, including adding people to the team and choosing their role.",
   INVENTORY_MANAGER:
-    "Manages stock, requests and maintenance. Cannot add or remove storage locations, or manage accounts.",
-  TEAMMATE:
-    "Can search stock, follow maintenance, raise requests and report faults.",
+    "Everything to do with the inventory: stock, storage locations, requests, maintenance and reports. Cannot add people or change roles.",
 };

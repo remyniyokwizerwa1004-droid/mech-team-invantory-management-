@@ -1,5 +1,5 @@
 ﻿/**
- * Seeds a realistic starting point: three accounts covering every role, a
+ * Seeds a realistic starting point: one account for each role, a
  * nested set of storage locations, a stocked tool list, and enough request and
  * ticket history that the dashboard has something to show.
  *
@@ -59,12 +59,6 @@ const users = [
     name: "Kastar",
     email: "manager@mechteam.local",
     role: "INVENTORY_MANAGER" as const,
-  },
-  {
-    id: "usr_tech",
-    name: "Grace Uwase",
-    email: "tech@mechteam.local",
-    role: "TEAMMATE" as const,
   },
 ];
 
@@ -425,7 +419,7 @@ const requests: Array<{
     reason: "Completely out. Two rewiring jobs are blocked.",
     urgency: "CRITICAL",
     status: "ORDERED",
-    requestedById: "usr_tech",
+    requestedById: "usr_manager",
     approvedById: "usr_manager",
     createdAt: daysAgo(9),
     events: [
@@ -433,7 +427,7 @@ const requests: Array<{
         fromStatus: null,
         toStatus: "REQUESTED",
         note: "Raised after the last roll ran out mid-job.",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(9),
       },
       {
@@ -490,7 +484,7 @@ const requests: Array<{
     reason: "Needed for contact cleaning before every camera reseat.",
     urgency: "NORMAL",
     status: "REQUESTED",
-    requestedById: "usr_tech",
+    requestedById: "usr_manager",
     approvedById: null,
     createdAt: daysAgo(2),
     events: [
@@ -498,7 +492,7 @@ const requests: Array<{
         fromStatus: null,
         toStatus: "REQUESTED",
         note: "",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(2),
       },
     ],
@@ -512,7 +506,7 @@ const requests: Array<{
     reason: "Only one spare left and the lead time is six weeks.",
     urgency: "HIGH",
     status: "REQUESTED",
-    requestedById: "usr_tech",
+    requestedById: "usr_manager",
     approvedById: null,
     createdAt: daysAgo(1),
     events: [
@@ -520,7 +514,7 @@ const requests: Array<{
         fromStatus: null,
         toStatus: "REQUESTED",
         note: "Worth ordering ahead of the next deployment.",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(1),
       },
     ],
@@ -535,7 +529,7 @@ const requests: Array<{
       "Not in inventory yet. Hand-written labels keep coming off the looms.",
     urgency: "LOW",
     status: "REJECTED",
-    requestedById: "usr_tech",
+    requestedById: "usr_manager",
     approvedById: "usr_admin",
     createdAt: daysAgo(14),
     events: [
@@ -543,7 +537,7 @@ const requests: Array<{
         fromStatus: null,
         toStatus: "REQUESTED",
         note: "",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(14),
       },
       {
@@ -628,7 +622,7 @@ const tickets: Array<{
       "The 2–24 Nm wrench releases around 15 Nm when it is set to 20 Nm. Checked against the second wrench and the readings do not agree. It should not be used on motor mounts until it is recalibrated.",
     severity: "HIGH",
     status: "IN_PROGRESS",
-    openedById: "usr_tech",
+    openedById: "usr_manager",
     assignedToId: "usr_manager",
     createdAt: daysAgo(5),
     resolvedAt: null,
@@ -638,7 +632,7 @@ const tickets: Array<{
         fromValue: null,
         toValue: "OPEN",
         note: "Flagged during the joint 2 rebuild.",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(5),
       },
       {
@@ -667,7 +661,7 @@ const tickets: Array<{
       "Battery pack B runs flat after about ten minutes of light use. The other two packs are fine, so it looks like the cells rather than the charger.",
     severity: "MEDIUM",
     status: "OPEN",
-    openedById: "usr_tech",
+    openedById: "usr_manager",
     assignedToId: null,
     createdAt: daysAgo(2),
     resolvedAt: null,
@@ -677,7 +671,7 @@ const tickets: Array<{
         fromValue: null,
         toValue: "OPEN",
         note: "",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(2),
       },
     ],
@@ -691,7 +685,7 @@ const tickets: Array<{
     severity: "CRITICAL",
     status: "OPEN",
     openedById: "usr_manager",
-    assignedToId: "usr_tech",
+    assignedToId: "usr_manager",
     createdAt: daysAgo(1),
     resolvedAt: null,
     events: [
@@ -706,7 +700,7 @@ const tickets: Array<{
       {
         type: "ASSIGNED",
         fromValue: null,
-        toValue: "Grace Uwase",
+        toValue: "Kastar",
         note: "Please try the older firmware first.",
         actorId: "usr_manager",
         createdAt: daysAgo(1),
@@ -721,7 +715,7 @@ const tickets: Array<{
       "Station 2 showed a temperature error and would not reach 350 C. The tip and the heating element were both replaced.",
     severity: "MEDIUM",
     status: "RESOLVED",
-    openedById: "usr_tech",
+    openedById: "usr_manager",
     assignedToId: "usr_manager",
     createdAt: daysAgo(20),
     resolvedAt: daysAgo(16),
@@ -731,7 +725,7 @@ const tickets: Array<{
         fromValue: null,
         toValue: "OPEN",
         note: "",
-        actorId: "usr_tech",
+        actorId: "usr_manager",
         createdAt: daysAgo(20),
       },
       {
@@ -860,7 +854,7 @@ async function main() {
       oldValue: "2 rolls",
       newValue: "0 rolls",
       note: "Used up on the arm rewiring job.",
-      performedById: "usr_tech",
+      performedById: "usr_manager",
       createdAt: daysAgo(9),
     },
     {
@@ -871,7 +865,7 @@ async function main() {
       oldValue: "LOW_STOCK",
       newValue: "FINISHED",
       note: null,
-      performedById: "usr_tech",
+      performedById: "usr_manager",
       createdAt: daysAgo(9),
     },
     {
