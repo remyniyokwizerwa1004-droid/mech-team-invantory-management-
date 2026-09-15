@@ -96,6 +96,8 @@ model User {
   ticketsOpened     RepairTicket[]       @relation("TicketOpenedBy")
   ticketsAssigned   RepairTicket[]       @relation("TicketAssignedTo")
   ticketEvents      TicketEvent[]        @relation("TicketEventActor")
+  toolsHeld         Tool[]               @relation("ToolHolder")
+  photosUploaded    ToolPhoto[]          @relation("PhotoUploadedBy")
 
   @@index([role])
 }
@@ -161,11 +163,18 @@ model Tool {
 
   createdById String?
 
+  // Who to ask while the item has no storage location. Set to whoever
+  // approved the request it arrived through, or whoever added it by hand, so
+  // an item that is not put away yet still has a name attached to it.
+  holderId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   storageLocation StorageLocation? @relation(fields: [storageLocationId], references: [id], onDelete: SetNull)
   createdBy       User?            @relation("ToolCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  holder          User?            @relation("ToolHolder", fields: [holderId], references: [id], onDelete: SetNull)
+  photo           ToolPhoto?
 
   logs     InventoryLog[]
   requests ProcurementRequest[]
@@ -176,6 +185,30 @@ model Tool {
   @@index([status])
   @@index([storageLocationId])
   @@index([updatedAt])
+  @@index([holderId])
+}
+
+// One optional photo per item. Kept in its own table so that listing tools
+// never drags image bytes along; queries only join here when they ask to.
+//
+// The browser shrinks a photo before uploading it, and sends a small square
+// thumbnail alongside, so lists stay light on a phone connection. Replacing a
+// photo creates a new row with a new id, which gives it a new address and
+// lets both the browser and the CDN cache every image forever.
+model ToolPhoto {
+  id           String   @id @default(cuid())
+  toolId       String   @unique
+  mimeType     String
+  data         Bytes
+  thumb        Bytes
+  width        Int
+  height       Int
+  byteSize     Int
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  tool       Tool  @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  uploadedBy User? @relation("PhotoUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
 }
 
 // Append-only audit trail. One row per change, never updated or deleted.

@@ -117,7 +117,7 @@ src/components/
 src/proxy.ts                Early redirect for signed-out visitors
 ```
 
-### Two design decisions worth knowing
+### Design decisions worth knowing
 
 **Stock status is calculated, not typed in.** A tool is `FINISHED` at zero,
 `LOW_STOCK` at or below its low-stock level, otherwise `AVAILABLE`. That means
@@ -152,6 +152,29 @@ inherited by anything nested inside.
 Add a location on the **Locations** page and set its question there. Run
 `npm run db:locations` to recreate the structure above from scratch; it
 matches on the short code, so it updates rather than duplicates.
+
+**Items can have a photo.** It is optional, added when an item is created or
+at any time afterwards by anyone who can edit items, and shown to everyone
+searching, signed out included. The browser shrinks the photo before it is
+sent: a 2.7 MB, 4107 × 6160 phone photo arrives as a 137 KB WebP at
+1067 × 1600, plus a small square thumbnail for lists. The server then checks
+the file's first bytes to confirm it really is a JPEG, PNG or WebP, and refuses
+anything else, including SVG.
+
+Photos are stored in the database, in their own `ToolPhoto` table, so there is
+no separate storage service to set up. At roughly 150 KB each, Neon's free
+0.5 GB holds a few thousand. Each photo is served from `/photos/<id>`, and a
+replacement gets a new id, so images are cached for a year without ever going
+stale.
+
+**New items arrive through requests.** When a request is for something not in
+the inventory yet, marking it Received creates the item in live stock with the
+requested quantity. A location can be chosen at that moment or left for later.
+
+**An item with no location still has a name on it.** Until someone puts it
+away, it shows as `Not put away yet · ask Kastar`, naming whoever approved the
+request it came from, or whoever added it by hand. The inventory filter has a
+**Not put away yet** option to find all of them.
 
 **A maintenance job says who is on it, not just what stage it is at.** A fault
 can sit at "Open" for a fortnight with nobody assigned, and in a list that

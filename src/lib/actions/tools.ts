@@ -9,6 +9,7 @@ import { assertPermission } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { deriveStatus } from "@/lib/inventory";
 import { fullLocation, getLocations } from "@/lib/locations";
+import { readPhotoUpload, type PhotoUpload } from "@/lib/photos";
 import { SAMPLE_PREFIXES } from "@/lib/sample-data";
 import {
   fieldErrors,
@@ -64,6 +65,32 @@ async function writeLogs(
   });
 }
 
+/**
+ * Puts a photo on an item, replacing any it had. A replacement is a new row
+ * with a new id, so its address changes and no cached copy of the old photo
+ * is ever shown in its place.
+ */
+async function storePhoto(
+  tx: Prisma.TransactionClient,
+  toolId: string,
+  uploadedById: string,
+  photo: PhotoUpload,
+): Promise<void> {
+  await tx.toolPhoto.deleteMany({ where: { toolId } });
+  await tx.toolPhoto.create({
+    data: {
+      toolId,
+      uploadedById,
+      mimeType: photo.mimeType,
+      data: photo.data,
+      thumb: photo.thumb,
+      width: photo.width,
+      height: photo.height,
+      byteSize: photo.data.byteLength,
+    },
+  });
+}
+
 export async function saveTool(
   _previous: ActionState,
   formData: FormData,
@@ -105,6 +132,14 @@ export async function saveTool(
       };
     }
 
+    const photo = await readPhotoUpload(formData);
+
+    if (photo && "error" in photo) {
+      return { errors: { photo: photo.error } };
+    }
+
+    const removePhoto = formData.get("removePhoto") === "1";
+
     // RETIRED is a human decision; everything else follows the quantity.
     const status = input.retired
       ? ("RETIRED" as const)
@@ -125,17 +160,31 @@ export async function saveTool(
     savedId = await prisma.$transaction(async (tx) => {
       if (!toolId) {
         const created = await tx.tool.create({
-          data: { ...data, createdById: user.id },
+          data: {
+            ...data,
+            createdById: user.id,
+            // Until it has a location, the person who added it is who to ask.
+            holderId: data.storageLocationId ? null : user.id,
+          },
           select: { id: true },
         });
 
-        await writeLogs(tx, created.id, user.id, [
+        const entries: LogInput[] = [
           {
             action: "CREATED",
             newValue: `${data.quantity} ${data.unit}`,
-            note: `Added to ${fullLocation(locations, data.storageLocationId, data.locationDetail)}`,
+            note: data.storageLocationId
+              ? `Added to ${fullLocation(locations, data.storageLocationId, data.locationDetail)}`
+              : "Added without a location yet",
           },
-        ]);
+        ];
+
+        if (photo) {
+          await storePhoto(tx, created.id, user.id, photo);
+          entries.push({ action: "DETAILS_UPDATED", field: "photo", newValue: "Photo added" });
+        }
+
+        await writeLogs(tx, created.id, user.id, entries);
 
         return created.id;
       }
@@ -152,6 +201,8 @@ export async function saveTool(
           status: true,
           storageLocationId: true,
           locationDetail: true,
+          holderId: true,
+          photo: { select: { id: true } },
         },
       });
 
@@ -159,7 +210,15 @@ export async function saveTool(
         throw new Error(`Tool ${toolId} no longer exists`);
       }
 
-      await tx.tool.update({ where: { id: toolId }, data });
+      await tx.tool.update({
+        where: { id: toolId },
+        data: {
+          ...data,
+          // An item taken out of its location must still have someone to ask.
+          holderId:
+            !data.storageLocationId && !before.holderId ? user.id : undefined,
+        },
+      });
 
       const entries: LogInput[] = [];
 
@@ -217,6 +276,18 @@ export async function saveTool(
           oldValue: String(oldValue) || "(empty)",
           newValue: String(newValue) || "(empty)",
         });
+      }
+
+      if (photo) {
+        await storePhoto(tx, toolId, user.id, photo);
+        entries.push({
+          action: "DETAILS_UPDATED",
+          field: "photo",
+          newValue: before.photo ? "Photo replaced" : "Photo added",
+        });
+      } else if (removePhoto && before.photo) {
+        await tx.toolPhoto.delete({ where: { toolId } });
+        entries.push({ action: "DETAILS_UPDATED", field: "photo", newValue: "Photo removed" });
       }
 
       await writeLogs(tx, toolId, user.id, entries);

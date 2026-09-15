@@ -11,6 +11,7 @@ import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getLocations, locationChoices } from "@/lib/locations";
 import { can } from "@/lib/permissions";
+import { photoUrl } from "@/lib/photos";
 
 export const metadata: Metadata = { title: "Edit tool" };
 export const dynamic = "force-dynamic";
@@ -23,7 +24,13 @@ export default async function EditToolPage(
   const user = await requirePermission("tool:write", `/tools/${id}/edit`);
 
   const [tool, categories, locations] = await Promise.all([
-    prisma.tool.findUnique({ where: { id } }),
+    prisma.tool.findUnique({
+      where: { id },
+      include: {
+        holder: { select: { name: true } },
+        photo: { select: { id: true } },
+      },
+    }),
     prisma.tool.findMany({
       distinct: ["category"],
       select: { category: true },
@@ -59,6 +66,8 @@ export default async function EditToolPage(
         }}
         categories={categories.map((row) => row.category)}
         locations={locationChoices(locations)}
+        photoUrl={tool.photo ? photoUrl(tool.photo.id) : null}
+        askName={tool.holder?.name ?? user.name}
       />
 
       {can(user.role, "tool:delete") ? (

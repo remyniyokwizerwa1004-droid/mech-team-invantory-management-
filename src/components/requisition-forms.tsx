@@ -1,6 +1,9 @@
 "use client";
 
+import { PackagePlus } from "lucide-react";
 import { useActionState, useState } from "react";
+
+import { LocationPicker, type LocationChoice } from "@/components/location-picker";
 
 import { Field, FormError, FormSuccess, Input, Select, Textarea } from "@/components/ui/form";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -153,11 +156,23 @@ export function RequestDecisionPanel({
   status,
   options,
   linkedToolName,
+  itemName,
+  quantityLabel,
+  approverName,
+  categories,
+  locations,
 }: {
   requestId: string;
   status: RequestStatus;
   options: RequestStatus[];
   linkedToolName: string | null;
+  itemName: string;
+  /** For example "5 rolls". */
+  quantityLabel: string;
+  /** Who approved it, and so who to ask while the new item has no location. */
+  approverName: string;
+  categories: string[];
+  locations: LocationChoice[];
 }) {
   const [state, formAction] = useActionState<ActionState, FormData>(
     decideRequest,
@@ -165,11 +180,17 @@ export function RequestDecisionPanel({
   );
 
   if (options.length === 0) {
+    // Keep the confirmation of the step just taken on screen: once a request
+    // is received the panel has nothing left to offer, and the message is
+    // where it says what happened to the stock and who to ask.
     return (
-      <p className="text-sm text-muted">
-        This request is {REQUEST_STATUS_LABELS[status].toLowerCase()}. There is
-        nothing further to decide.
-      </p>
+      <div className="space-y-3">
+        <FormSuccess message={state.success} />
+        <p className="text-sm text-muted">
+          This request is {REQUEST_STATUS_LABELS[status].toLowerCase()}. There is
+          nothing further to decide.
+        </p>
+      </div>
     );
   }
 
@@ -194,6 +215,77 @@ export function RequestDecisionPanel({
           placeholder="PO 2291 raised. Expected within the week."
         />
       </Field>
+
+      {canReceive && !linkedToolName ? (
+        <fieldset className="space-y-4 rounded-lg border border-brand-line bg-brand-soft/40 p-4">
+          {/* A native legend sits on the border line; keep it for screen
+              readers and show an ordinary heading inside the box instead. */}
+          <legend className="sr-only">Details for the new item</legend>
+          <p className="flex items-start gap-2 text-sm font-semibold text-ink">
+            <PackagePlus className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden />
+            When it arrives, it goes into the inventory
+          </p>
+
+          <p className="text-sm text-body">
+            Marking this received adds <span className="font-medium text-ink">{quantityLabel} of {itemName}</span>{" "}
+            to live stock straight away. Everything below can be changed later
+            on the item itself.
+          </p>
+
+          <div className="grid gap-4">
+            <Field
+              label="Category"
+              htmlFor={`receiveCategory-${requestId}`}
+              hint="Pick one or type a new one. Left empty, it is filed as Uncategorised."
+              error={state.errors?.receiveCategory}
+            >
+              <Input
+                id={`receiveCategory-${requestId}`}
+                name="receiveCategory"
+                list={`receive-categories-${requestId}`}
+                placeholder="Hand Tools"
+              />
+              <datalist id={`receive-categories-${requestId}`}>
+                {categories.map((category) => (
+                  <option key={category} value={category} />
+                ))}
+              </datalist>
+            </Field>
+
+            <Field
+              label="Low-stock level"
+              htmlFor={`receiveLowStock-${requestId}`}
+              hint="At or below this, it shows as low stock."
+              error={state.errors?.receiveLowStock}
+            >
+              <Input
+                id={`receiveLowStock-${requestId}`}
+                name="receiveLowStock"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                defaultValue={1}
+              />
+            </Field>
+          </div>
+
+          <LocationPicker
+            locations={locations}
+            errors={{
+              storageLocationId: state.errors?.storageLocationId,
+              locationDetail: state.errors?.locationDetail,
+            }}
+            unplacedNote={
+              <>
+                You can give it a location later. Until then, anyone looking for
+                it is told to ask <strong>{approverName}</strong>, who approved
+                this request.
+              </>
+            }
+          />
+        </fieldset>
+      ) : null}
 
       {canReceive && linkedToolName ? (
         <label className="flex items-start gap-3 rounded-lg border border-line bg-surface-sunken p-3">

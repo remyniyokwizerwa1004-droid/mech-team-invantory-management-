@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import {
+  Camera,
   ClipboardList,
   History,
   MapPin,
+  PackageOpen,
   Pencil,
   ShoppingCart,
   UserRound,
@@ -31,8 +34,9 @@ import {
   INVENTORY_ACTION_LABELS,
   TOOL_STATUS_LABELS,
 } from "@/lib/display";
-import { contactFor, fullLocation, getLocations } from "@/lib/locations";
+import { contactFor, getLocations, whereToFind } from "@/lib/locations";
 import { can } from "@/lib/permissions";
+import { photoUrl } from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +69,8 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
       where: { id },
       include: {
         createdBy: { select: { name: true } },
+        holder: { select: { name: true } },
+        photo: { select: { id: true, width: true, height: true } },
         logs: {
           orderBy: { createdAt: "desc" },
           take: 30,
@@ -108,6 +114,7 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
   // Somewhere like the office keeps things on a person's desk rather than in
   // a labelled place, so the location carries a name to ask for.
   const askFor = contactFor(locations, tool.storageLocationId);
+  const find = whereToFind(locations, tool);
 
   const facts = [
     {
@@ -123,12 +130,8 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
       value: (
         <span className="inline-flex items-start gap-1.5">
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-muted" aria-hidden />
-          <span>
-            {fullLocation(
-              locations,
-              tool.storageLocationId,
-              tool.locationDetail,
-            )}
+          <span className={find.placed ? undefined : "font-medium text-warning"}>
+            {find.text}
           </span>
         </span>
       ),
@@ -192,6 +195,63 @@ export default async function ToolDetailPage(props: PageProps<"/tools/[id]">) {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="space-y-6">
+          {!find.placed ? (
+            <div className="flex flex-wrap items-start gap-3 rounded-card border border-warning-line bg-warning-soft p-4">
+              <PackageOpen className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-warning">Not put away yet</p>
+                <p className="mt-0.5 text-sm text-body">
+                  {find.askName ? (
+                    <>
+                      This item has no storage location. To find it, ask{" "}
+                      <span className="font-medium text-ink">{find.askName}</span>.
+                    </>
+                  ) : (
+                    "This item has no storage location yet."
+                  )}
+                </p>
+              </div>
+              {canEdit ? (
+                <Link
+                  href={`/tools/${tool.id}/edit`}
+                  className={buttonClasses({ size: "sm" })}
+                >
+                  <MapPin className="size-3.5" aria-hidden />
+                  Give it a location
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+
+          {tool.photo ? (
+            <Card className="overflow-hidden">
+              <Image
+                src={photoUrl(tool.photo.id)}
+                alt={`Photo of ${tool.name}`}
+                width={tool.photo.width}
+                height={tool.photo.height}
+                unoptimized
+                fetchPriority="high"
+                className="max-h-[28rem] w-full bg-surface-sunken object-contain"
+              />
+            </Card>
+          ) : canEdit ? (
+            <Link
+              href={`/tools/${tool.id}/edit#photo`}
+              className="flex items-center gap-3 rounded-card border border-dashed border-line-strong bg-surface p-4 text-sm text-body transition-colors hover:border-brand-line hover:text-ink"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-sunken">
+                <Camera className="size-4 text-muted" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-medium text-ink">Add a photo</span>
+                <span className="block text-muted">
+                  Help people recognise this item when they search for it.
+                </span>
+              </span>
+            </Link>
+          ) : null}
+
           <Card>
             <CardHeader title="Details" />
             <CardBody>

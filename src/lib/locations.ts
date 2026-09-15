@@ -186,3 +186,35 @@ export function locationChoices(locations: LocationNode[]): Array<{
     };
   });
 }
+
+/**
+ * What to tell someone looking for an item: its full location, or, while it
+ * has none, the name of the person to ask about it.
+ *
+ *   "Warehouse 1 › Drawers — Locker 04"
+ *   "Not put away yet · ask Kastar"
+ */
+export function whereToFind(
+  locations: LocationNode[],
+  tool: {
+    storageLocationId: string | null;
+    locationDetail: string | null;
+    holder?: { name: string } | null;
+  },
+): { text: string; placed: boolean; askName: string | null } {
+  if (tool.storageLocationId) {
+    return {
+      text: fullLocation(locations, tool.storageLocationId, tool.locationDetail),
+      placed: true,
+      askName: null,
+    };
+  }
+
+  const askName = tool.holder?.name ?? null;
+
+  return {
+    text: askName ? `Not put away yet · ask ${askName}` : "Not put away yet",
+    placed: false,
+    askName,
+  };
+}

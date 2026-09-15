@@ -118,11 +118,11 @@ export default async function LocationsPage() {
           hint={
             unplaced === 0
               ? "Everything has a home"
-              : "Searchable, but nobody knows where they are"
+              : "Waiting to be put away. Open to see who to ask"
           }
           tone={unplaced === 0 ? "neutral" : "warning"}
           icon={PackageX}
-          href={unplaced === 0 ? undefined : "/tools/manage"}
+          href={unplaced === 0 ? undefined : "/?location=none"}
         />
       </div>
 

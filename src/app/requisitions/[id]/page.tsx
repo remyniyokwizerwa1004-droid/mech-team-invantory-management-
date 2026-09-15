@@ -16,6 +16,7 @@ import {
   REQUEST_STATUS_LABELS,
 } from "@/lib/display";
 import { can } from "@/lib/permissions";
+import { getLocations, locationChoices } from "@/lib/locations";
 import { nextRequestStatuses } from "@/lib/workflow";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,18 @@ export default async function RequisitionDetailPage(
   if (!request) notFound();
 
   const canDecide = can(user.role, "requisition:decide");
+
+  // Only needed when this request can still be received as a new item.
+  const [categoryRows, locations] = canDecide && !request.tool
+    ? await Promise.all([
+        prisma.tool.findMany({
+          distinct: ["category"],
+          select: { category: true },
+          orderBy: { category: "asc" },
+        }),
+        getLocations(),
+      ])
+    : [[], []];
 
   const facts = [
     {
@@ -162,6 +175,11 @@ export default async function RequisitionDetailPage(
                   status={request.status}
                   options={nextRequestStatuses(request.status)}
                   linkedToolName={request.tool?.name ?? null}
+                  itemName={request.itemName}
+                  quantityLabel={`${request.quantityRequested} ${request.unit}`}
+                  approverName={request.approvedBy?.name ?? user.name}
+                  categories={categoryRows.map((row) => row.category)}
+                  locations={locationChoices(locations)}
                 />
               ) : (
                 <p className="text-sm text-body">

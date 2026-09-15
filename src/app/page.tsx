@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -5,6 +6,7 @@ import {
   CircleCheck,
   CircleSlash,
   MapPin,
+  Package,
   PackageSearch,
   Plus,
   SearchX,
@@ -24,12 +26,14 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatRelative, TOOL_STATUS_LABELS } from "@/lib/display";
 import {
-  fullLocation,
   getLocations,
   locationOptions,
+  whereToFind,
   withDescendants,
 } from "@/lib/locations";
 import { can } from "@/lib/permissions";
+import { photoUrl } from "@/lib/photos";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -38,10 +42,18 @@ function first(value: string | string[] | undefined): string {
   return value ?? "";
 }
 
-const STATUSES: ToolStatus[] = ["AVAILABLE", "LOW_STOCK", "FINISHED", "RETIRED"];
+const STATUSES: ToolStatus[] = [
+  "AVAILABLE",
+  "LOW_STOCK",
+  "FINISHED",
+  "RETIRED",
+];
 
 /** One screenful per request, so the page stays fast however big stock gets. */
 const PER_PAGE = 50;
+
+/** The location filter value for items that have not been put away yet. */
+const UNPLACED = "none";
 
 export default async function InventoryPage(props: PageProps<"/">) {
   const searchParams = await props.searchParams;
@@ -81,7 +93,9 @@ export default async function InventoryPage(props: PageProps<"/">) {
 
   // Picking a room should find what is on its shelves, not just what is
   // filed against the room itself.
-  if (locationId) {
+  if (locationId === UNPLACED) {
+    where.storageLocationId = null;
+  } else if (locationId) {
     where.storageLocationId = { in: withDescendants(locations, locationId) };
   }
 
@@ -106,13 +120,18 @@ export default async function InventoryPage(props: PageProps<"/">) {
       storageLocationId: true,
       locationDetail: true,
       updatedAt: true,
+      holder: { select: { name: true } },
+      photo: { select: { id: true } },
     },
   });
 
   const countFor = (value: ToolStatus) =>
     statusCounts.find((row) => row.status === value)?._count._all ?? 0;
 
-  const totalItems = statusCounts.reduce((sum, row) => sum + row._count._all, 0);
+  const totalItems = statusCounts.reduce(
+    (sum, row) => sum + row._count._all,
+    0,
+  );
   const isFiltered = Boolean(q || category || status || locationId);
 
   return (
@@ -176,7 +195,10 @@ export default async function InventoryPage(props: PageProps<"/">) {
             <InventoryFilters
               values={{ q, category, status, location: locationId }}
               categories={categoryRows.map((row) => row.category)}
-              locations={locationOptions(locations)}
+              locations={[
+                { id: UNPLACED, label: "Not put away yet" },
+                ...locationOptions(locations),
+              ]}
             />
           </div>
 
@@ -251,67 +273,95 @@ export default async function InventoryPage(props: PageProps<"/">) {
             </div>
 
             <ul className="divide-y divide-line">
-              {tools.map((tool) => (
-                <li key={tool.id}>
-                  <Link
-                    href={`/tools/${tool.id}`}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-surface-sunken md:grid-cols-[minmax(0,2.2fr)_8.5rem_7.5rem_minmax(0,1.5fr)_7rem_1rem] md:gap-4"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-ink">
-                        {tool.name}
-                      </p>
-                      <p className="truncate text-xs text-muted">
-                        {tool.category}
-                      </p>
-                    </div>
+              {tools.map((tool) => {
+                const find = whereToFind(locations, tool);
 
-                    <div className="justify-self-end md:justify-self-start">
-                      <ToolStatusBadge status={tool.status} />
-                    </div>
+                return (
+                  <li key={tool.id}>
+                    <Link
+                      href={`/tools/${tool.id}`}
+                      className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-surface-sunken md:grid-cols-[minmax(0,2.2fr)_8.5rem_7.5rem_minmax(0,1.5fr)_7rem_1rem] md:gap-4"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-surface-sunken">
+                          {tool.photo ? (
+                            <Image
+                              src={photoUrl(tool.photo.id, "thumb")}
+                              alt=""
+                              width={44}
+                              height={44}
+                              unoptimized
+                              className="size-full object-cover"
+                            />
+                          ) : (
+                            <Package
+                              className="size-4 text-muted"
+                              aria-hidden
+                            />
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium text-ink">
+                            {tool.name}
+                          </span>
+                          <span className="block truncate text-xs text-muted">
+                            {tool.category}
+                          </span>
+                        </span>
+                      </div>
 
-                    {/* Compact summary line, phones only. */}
-                    <p className="col-span-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted md:hidden">
-                      <span className="tabular font-medium text-body">
-                        {tool.quantity} {tool.unit}
-                      </span>
-                      <span aria-hidden>·</span>
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="size-3" aria-hidden />
-                        {fullLocation(
-                          locations,
-                          tool.storageLocationId,
-                          tool.locationDetail,
+                      <div className="justify-self-end md:justify-self-start">
+                        <ToolStatusBadge status={tool.status} />
+                      </div>
+
+                      {/* Compact summary line, phones only. */}
+                      <p className="col-span-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted md:hidden">
+                        <span className="tabular font-medium text-body">
+                          {tool.quantity} {tool.unit}
+                        </span>
+                        <span aria-hidden>·</span>
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1",
+                            !find.placed && "font-medium text-warning",
+                          )}
+                        >
+                          <MapPin className="size-3" aria-hidden />
+                          {find.text}
+                        </span>
+                        <span aria-hidden>·</span>
+                        <span>{formatRelative(tool.updatedAt)}</span>
+                      </p>
+
+                      <p className="tabular hidden text-sm text-body md:block">
+                        {tool.quantity}{" "}
+                        <span className="text-muted">{tool.unit}</span>
+                      </p>
+
+                      <p
+                        className={cn(
+                          "hidden text-sm md:block",
+                          // A cut-off name defeats the point of "ask this person".
+                          find.placed
+                            ? "truncate text-body"
+                            : "font-medium text-warning",
                         )}
-                      </span>
-                      <span aria-hidden>·</span>
-                      <span>{formatRelative(tool.updatedAt)}</span>
-                    </p>
+                      >
+                        {find.text}
+                      </p>
 
-                    <p className="tabular hidden text-sm text-body md:block">
-                      {tool.quantity}{" "}
-                      <span className="text-muted">{tool.unit}</span>
-                    </p>
+                      <p className="hidden text-xs text-muted md:block">
+                        {formatRelative(tool.updatedAt)}
+                      </p>
 
-                    <p className="hidden truncate text-sm text-body md:block">
-                      {fullLocation(
-                        locations,
-                        tool.storageLocationId,
-                        tool.locationDetail,
-                      )}
-                    </p>
-
-                    <p className="hidden text-xs text-muted md:block">
-                      {formatRelative(tool.updatedAt)}
-                    </p>
-
-                    <ChevronRight
-                      className="hidden size-4 text-muted md:block"
-                      aria-hidden
-                    />
-                  </Link>
-                </li>
-              ))}
+                      <ChevronRight
+                        className="hidden size-4 text-muted md:block"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
 
             <Pagination
